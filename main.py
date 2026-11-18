@@ -1,5 +1,6 @@
 
 from protein.representation.hp_model import convert_to_hp
+from algorithms.moves import end_move
 from protein.representation.structure import ProteinStructure
 from protein.representation.constraints import is_valid_structure
 from evaluation.energy import calculate_energy
@@ -41,3 +42,27 @@ test_protein = ProteinStructure(
 
 test_energy = calculate_energy(test_protein)
 print("Test Energy:", test_energy)
+
+# Test End Move
+new_protein = end_move(protein)
+
+print("\n--- END MOVE TEST ---")
+
+if new_protein is not None:
+
+    print("New Coordinates:")
+
+    for i in range(new_protein.get_length()):
+        print(
+            i + 1,
+            new_protein.get_amino_acid_type(i),
+            new_protein.get_coordinate(i)
+        )
+
+    print(
+        "New Structure Valid:",
+        is_valid_structure(new_protein)
+    )
+
+else:
+    print("No valid move available.")
