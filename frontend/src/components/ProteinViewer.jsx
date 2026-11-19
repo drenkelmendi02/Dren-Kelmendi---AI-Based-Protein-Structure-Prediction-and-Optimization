@@ -1,9 +1,10 @@
 
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
+import { Vector3, Quaternion } from "three";
 
 
-function AminoAcid({ position, type, index }) {
+function AminoAcid({ position, type }) {
     const color = type === "H" ? "red" : "blue";
 
     return (
@@ -15,48 +16,57 @@ function AminoAcid({ position, type, index }) {
 }
 
 
+function Bond({ start, end }) {
+    const startVector = new Vector3(...start);
+    const endVector = new Vector3(...end);
+
+    const direction = new Vector3()
+        .subVectors(endVector, startVector);
+
+    const length = direction.length();
+
+    const midpoint = new Vector3()
+        .addVectors(startVector, endVector)
+        .multiplyScalar(0.5);
+
+    const quaternion = new Quaternion()
+        .setFromUnitVectors(
+            new Vector3(0, 1, 0),
+            direction.normalize()
+        );
+
+    return (
+        <mesh
+            position={midpoint.toArray()}
+            quaternion={quaternion}
+        >
+            <cylinderGeometry args={[0.06, 0.06, length, 12]} />
+            <meshStandardMaterial color="gray" />
+        </mesh>
+    );
+}
+
+
 function ProteinChain({ coordinates, hpSequence }) {
     return (
         <>
             {coordinates.map((point, index) => (
                 <AminoAcid
-                    key={index}
+                    key={`amino-${index}`}
                     position={[point.x, point.y, point.z]}
                     type={hpSequence[index]}
-                    index={index}
                 />
             ))}
 
             {coordinates.slice(0, -1).map((point, index) => {
                 const next = coordinates[index + 1];
 
-                const start = [point.x, point.y, point.z];
-                const end = [next.x, next.y, next.z];
-
-                const midpoint = [
-                    (start[0] + end[0]) / 2,
-                    (start[1] + end[1]) / 2,
-                    (start[2] + end[2]) / 2
-                ];
-
-                const dx = end[0] - start[0];
-                const dz = end[2] - start[2];
-
-                const rotation = dx !== 0
-               ? [0, 0, Math.PI / 2]
-               : dz !== 0
-               ? [Math.PI / 2, 0, 0]
-               : [0, 0, 0];
-
                 return (
-                    <mesh
+                    <Bond
                         key={`bond-${index}`}
-                        position={midpoint}
-                        rotation={rotation}
->
-                        <cylinderGeometry args={[0.06, 0.06, length, 12]} />
-                        <meshStandardMaterial color="gray" />
-                    </mesh>
+                        start={[point.x, point.y, point.z]}
+                        end={[next.x, next.y, next.z]}
+                    />
                 );
             })}
         </>

@@ -1,9 +1,8 @@
 
 import { useState } from "react";
 import ProteinViewer from "./components/ProteinViewer";
+import EnergyChart from "./components/EnergyChart";
 import "./App.css";
-import EnergyChart from "./components/EnergyChart"; 
-
 function App() {
     const [sequence, setSequence] = useState("ACDEFGHIKL");
     const [result, setResult] = useState(null);
