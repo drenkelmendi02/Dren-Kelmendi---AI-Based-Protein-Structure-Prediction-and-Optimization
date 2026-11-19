@@ -1,0 +1,174 @@
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #0f172a;
+    color: #f8fafc;
+}
+
+.app {
+    min-height: 100vh;
+    padding: 30px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+header h1 {
+    font-size: 32px;
+    color: #38bdf8;
+    margin-bottom: 12px;
+}
+
+header p {
+    color: #94a3b8;
+    font-size: 16px;
+}
+
+main {
+    max-width: 1200px;
+    margin: auto;
+}
+
+.input-section,
+.results-section,
+.viewer-section {
+    background-color: #1e293b;
+    padding: 25px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+}
+
+h2 {
+    margin-bottom: 20px;
+    color: #38bdf8;
+}
+
+.input-section input {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid #475569;
+    border-radius: 8px;
+    background-color: #0f172a;
+    color: white;
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+.input-section button {
+    padding: 13px 25px;
+    background-color: #0284c7;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.input-section button:hover {
+    background-color: #0369a1;
+}
+
+.input-section button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.error {
+    color: #f87171;
+    margin-top: 15px;
+}
+
+.metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.metric {
+    background-color: #0f172a;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.metric h3 {
+    color: #94a3b8;
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.metric p {
+    color: #38bdf8;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.results-section > p {
+    margin-top: 12px;
+    color: #cbd5e1;
+}
+
+.viewer-section > div {
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+    .app {
+        padding: 15px;
+    }
+
+    header h1 {
+        font-size: 24px;
+    }
+
+    .metrics {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 450px) {
+    .metrics {
+        grid-template-columns: 1fr;
+    }
+}
+
+.energy-chart {
+    background-color: #0f172a;
+    padding: 25px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.energy-chart h2 {
+    color: #38bdf8;
+    margin-bottom: 20px;
+}
+
+.energy-chart svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.energy-chart p {
+    color: #cbd5e1;
+    font-size: 14px;
+    margin-top: 12px;
+}
+
+@media (max-width: 600px) {
+    .energy-chart {
+        padding: 15px;
+    }
+}
