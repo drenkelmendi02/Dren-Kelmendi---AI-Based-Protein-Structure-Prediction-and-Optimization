@@ -142,3 +142,33 @@ h2 {
         grid-template-columns: 1fr;
     }
 }
+
+.energy-chart {
+    background-color: #0f172a;
+    padding: 25px;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+.energy-chart h2 {
+    color: #38bdf8;
+    margin-bottom: 20px;
+}
+
+.energy-chart svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.energy-chart p {
+    color: #cbd5e1;
+    font-size: 14px;
+    margin-top: 12px;
+}
+
+@media (max-width: 600px) {
+    .energy-chart {
+        padding: 15px;
+    }
+}

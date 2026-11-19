@@ -2,6 +2,7 @@
 import { useState } from "react";
 import ProteinViewer from "./components/ProteinViewer";
 import "./App.css";
+import EnergyChart from "./components/EnergyChart"; 
 
 function App() {
     const [sequence, setSequence] = useState("ACDEFGHIKL");
@@ -119,6 +120,11 @@ function App() {
                                 hpSequence={result.hp_sequence}
                             />
                         </section>
+                        <section className="results-section">
+                        <EnergyChart
+                        energyHistory={result.energy_history}
+                        />
+                          </section>
                     </>
                 )}
 

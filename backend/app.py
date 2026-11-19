@@ -12,22 +12,27 @@ from algorithms.simulated_annealing import simulated_annealing
 from evaluation.metrics import measure_performance
 
 
-app = FastAPI(title="Protein Structure Optimization API")
-
-
-# Allow React frontend to communicate with Python backend
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-    "http://localhost:5173",
-    "http://127.0.0.1:5173"
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+app = FastAPI(
+    title="Protein Structure Optimization API",
+    description="3D Protein Folding using Simulated Annealing",
+    version="1.0.0"
 )
 
 
+# React Frontend Configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+
+
+# Request Model
 class ProteinRequest(BaseModel):
     sequence: str
     iterations: int = Field(default=1000, ge=1, le=100000)
@@ -35,6 +40,7 @@ class ProteinRequest(BaseModel):
     cooling_rate: float = Field(default=0.995, gt=0, le=1)
 
 
+# API Home
 @app.get("/")
 def home():
     return {
@@ -42,11 +48,13 @@ def home():
     }
 
 
+# Protein Optimization
 @app.post("/optimize")
 def optimize_protein(request: ProteinRequest):
 
     try:
         sequence = validate_sequence(request.sequence)
+
         hp_sequence = convert_to_hp(sequence)
 
         initial_structure = ProteinStructure(hp_sequence)
@@ -70,6 +78,7 @@ def optimize_protein(request: ProteinRequest):
         return {
             "sequence": sequence,
             "hp_sequence": hp_sequence,
+
             "coordinates": [
                 {
                     "x": x,
@@ -78,10 +87,13 @@ def optimize_protein(request: ProteinRequest):
                 }
                 for x, y, z in best_structure.coordinates
             ],
+
             "energy": best_energy,
             "energy_history": energy_history,
             "iterations": len(energy_history),
+
             "is_valid": is_valid_structure(best_structure),
+
             "execution_time": performance["execution_time"],
             "peak_memory_mb": performance["peak_memory_mb"]
         }
