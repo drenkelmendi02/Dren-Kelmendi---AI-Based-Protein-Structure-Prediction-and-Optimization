@@ -4,6 +4,7 @@ from algorithms.moves import end_move
 from protein.representation.structure import ProteinStructure
 from algorithms.simulated_annealing import simulated_annealing
 from protein.representation.constraints import is_valid_structure
+from evaluation.metrics import measure_performance
 from evaluation.energy import calculate_energy
 
 
@@ -67,13 +68,21 @@ if new_protein is not None:
 
 else:
     print("No valid move available.")
-    
-best_structure, best_energy, energy_history = simulated_annealing(
+
+# Measure Simulated Annealing performance
+result, performance = measure_performance(
+    simulated_annealing,
     protein,
     initial_temperature=10.0,
     cooling_rate=0.995,
     iterations=1000
 )
+
+best_structure, best_energy, energy_history = result
+
+print("\n--- PERFORMANCE METRICS ---")
+print("Execution Time:", performance["execution_time"], "seconds")
+print("Peak Memory:", performance["peak_memory_mb"], "MB")
 
 print("\n--- SIMULATED ANNEALING RESULTS ---")
 print("Best Energy:", best_energy)
