@@ -39,17 +39,21 @@ function ProteinChain({ coordinates, hpSequence }) {
                     (start[2] + end[2]) / 2
                 ];
 
-                const length = Math.sqrt(
-                    (end[0] - start[0]) ** 2 +
-                    (end[1] - start[1]) ** 2 +
-                    (end[2] - start[2]) ** 2
-                );
+                const dx = end[0] - start[0];
+                const dz = end[2] - start[2];
+
+                const rotation = dx !== 0
+               ? [0, 0, Math.PI / 2]
+               : dz !== 0
+               ? [Math.PI / 2, 0, 0]
+               : [0, 0, 0];
 
                 return (
                     <mesh
                         key={`bond-${index}`}
                         position={midpoint}
-                    >
+                        rotation={rotation}
+>
                         <cylinderGeometry args={[0.06, 0.06, length, 12]} />
                         <meshStandardMaterial color="gray" />
                     </mesh>

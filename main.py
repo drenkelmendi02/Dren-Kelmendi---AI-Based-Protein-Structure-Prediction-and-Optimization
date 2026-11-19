@@ -1,6 +1,5 @@
 
 from protein.representation.hp_model import convert_to_hp
-from visualization.structure_view import plot_structure, plot_energy_history
 from algorithms.moves import end_move
 from protein.representation.structure import ProteinStructure
 from algorithms.simulated_annealing import simulated_annealing
@@ -89,7 +88,3 @@ for i in range(best_structure.get_length()):
         best_structure.get_coordinate(i)
     )
 
-
-# Visualize the best structure and energy history
-plot_structure(best_structure, "Simulated Annealing - Best Structure")
-plot_energy_history(energy_history, "Simulated Annealing - Energy Convergence")
