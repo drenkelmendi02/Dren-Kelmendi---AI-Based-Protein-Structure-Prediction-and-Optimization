@@ -4,6 +4,7 @@ from algorithms.moves import end_move
 from protein.representation.structure import ProteinStructure
 from algorithms.simulated_annealing import simulated_annealing
 from protein.representation.constraints import is_valid_structure
+from experiments.benchmark import run_benchmark
 from evaluation.metrics import measure_performance
 from evaluation.energy import calculate_energy
 
@@ -97,3 +98,21 @@ for i in range(best_structure.get_length()):
         best_structure.get_amino_acid_type(i),
         best_structure.get_coordinate(i)
     )
+
+
+print("\n--- BENCHMARK RESULTS ---")
+
+benchmark_results = run_benchmark(
+    lengths=(10, 20, 30, 40),
+    runs=5,
+    iterations=1000
+)
+
+for result in benchmark_results:
+
+    print("\nProtein Length:", result["length"])
+    print("Average Time:", result["average_time"], "seconds")
+    print("Average Memory:", result["average_memory"], "MB")
+    print("Best Energy:", result["best_energy"])
+    print("Average Energy:", result["average_energy"])
+    print("All Structures Valid:", result["all_valid"])
