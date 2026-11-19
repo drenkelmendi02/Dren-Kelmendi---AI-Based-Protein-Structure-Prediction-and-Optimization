@@ -8,6 +8,7 @@ from protein.representation.constraints import is_valid_structure
 from experiments.benchmark import run_benchmark
 from evaluation.metrics import measure_performance
 from evaluation.energy import calculate_energy
+from algorithms.genetic_algorithm import genetic_algorithm
 
 
 # Original protein sequence
@@ -105,18 +106,27 @@ print("\n--- BENCHMARK RESULTS ---")
 
 benchmark_results = run_benchmark(
     lengths=(10, 20, 30, 40),
-    runs=5,
-    iterations=1000
+    runs=5
 )
+
+
+print("\n========== ALGORITHM COMPARISON ==========")
 
 for result in benchmark_results:
 
     print("\nProtein Length:", result["length"])
-    print("Average Time:", result["average_time"], "seconds")
-    print("Average Memory:", result["average_memory"], "MB")
-    print("Best Energy:", result["best_energy"])
-    print("Average Energy:", result["average_energy"])
-    print("All Structures Valid:", result["all_valid"])
+
+    for algorithm in ("SA", "GA"):
+
+        data = result[algorithm]
+
+        print(f"\n{algorithm} Results:")
+        print("Average Time:", round(data["average_time"], 6), "seconds")
+        print("Average Memory:", round(data["average_memory"], 6), "MB")
+        print("Best Energy:", data["best_energy"])
+        print("Average Energy:", round(data["average_energy"], 2))
+        print("All Structures Valid:", data["all_valid"])
+
 
 
 ga_structure, ga_energy, ga_history = genetic_algorithm(
