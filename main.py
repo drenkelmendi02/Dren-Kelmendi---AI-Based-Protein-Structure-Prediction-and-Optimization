@@ -2,6 +2,7 @@
 from protein.representation.hp_model import convert_to_hp
 from protein.representation.structure import ProteinStructure
 from protein.representation.constraints import is_valid_structure
+from algorithms.genetic_algorithm import genetic_algorithm
 
 from algorithms.simulated_annealing import simulated_annealing
 
@@ -90,3 +91,25 @@ print(
     performance["peak_memory_mb"],
     "MB"
 )
+
+print("\n========== GENETIC ALGORITHM ==========")
+
+ga_result, ga_performance = measure_performance(
+    genetic_algorithm,
+    protein,
+    population_size=30,
+    generations=100,
+    mutation_rate=0.3,
+    crossover_rate=0.8
+)
+
+ga_structure, ga_energy, ga_history = ga_result
+
+print("Best Energy:", ga_energy)
+print("Generations:", len(ga_history))
+print("Execution Time:",
+      round(ga_performance["execution_time"], 4), "seconds")
+print("Peak Memory:",
+      round(ga_performance["peak_memory_mb"], 4), "MB")
+print("Valid Structure:",
+      is_valid_structure(ga_structure))
