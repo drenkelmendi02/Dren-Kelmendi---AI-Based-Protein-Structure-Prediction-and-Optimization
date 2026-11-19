@@ -2,7 +2,7 @@
 import math
 import random
 
-from algorithms.moves import end_move
+from algorithms.moves import random_move
 from evaluation.energy import calculate_energy
 
 
@@ -25,7 +25,7 @@ def simulated_annealing(
 
     for iteration in range(iterations):
 
-        new_structure = end_move(current_structure)
+        new_structure = random_move(current_structure)
 
         if new_structure is None:
             energy_history.append(current_energy)

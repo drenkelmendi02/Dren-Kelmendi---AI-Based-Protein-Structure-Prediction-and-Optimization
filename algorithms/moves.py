@@ -53,3 +53,72 @@ def end_move(structure):
         structure.hp_sequence,
         coordinates
     )
+
+def pivot_move(structure):
+    """
+    Rotate a part of the protein around a randomly
+    selected pivot amino acid.
+    """
+
+    coordinates = structure.coordinates.copy()
+    length = len(coordinates)
+
+    if length < 3:
+        return None
+
+    # Select a pivot position
+    pivot_index = random.randint(0, length - 2)
+
+    pivot_x, pivot_y = coordinates[pivot_index]
+
+    # Select a rotation angle
+    angle = random.choice([90, 180, 270])
+
+    # Rotate all amino acids after the pivot
+    for i in range(pivot_index + 1, length):
+
+        x, y = coordinates[i]
+
+        dx = x - pivot_x
+        dy = y - pivot_y
+
+        if angle == 90:
+            new_dx, new_dy = -dy, dx
+
+        elif angle == 180:
+            new_dx, new_dy = -dx, -dy
+
+        else:
+            new_dx, new_dy = dy, -dx
+
+        coordinates[i] = (
+            pivot_x + new_dx,
+            pivot_y + new_dy
+        )
+
+    # Reject structures with overlapping positions
+    if len(coordinates) != len(set(coordinates)):
+        return None
+
+    return ProteinStructure(
+        structure.hp_sequence,
+        coordinates
+    )
+
+
+def random_move(structure):
+    """
+    Generate a new structure using a random
+    movement operation.
+    """
+
+    for _ in range(10):
+
+        move = random.choice([end_move, pivot_move])
+
+        new_structure = move(structure)
+
+        if new_structure is not None:
+            return new_structure
+
+    return None

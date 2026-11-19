@@ -2,6 +2,7 @@
 from protein.representation.hp_model import convert_to_hp
 from algorithms.moves import end_move
 from protein.representation.structure import ProteinStructure
+from algorithms.simulated_annealing import simulated_annealing
 from protein.representation.constraints import is_valid_structure
 from evaluation.energy import calculate_energy
 
@@ -66,3 +67,24 @@ if new_protein is not None:
 
 else:
     print("No valid move available.")
+    
+best_structure, best_energy, energy_history = simulated_annealing(
+    protein,
+    initial_temperature=10.0,
+    cooling_rate=0.995,
+    iterations=1000
+)
+
+print("\n--- SIMULATED ANNEALING RESULTS ---")
+print("Best Energy:", best_energy)
+print("Iterations:", len(energy_history))
+print("Best Structure Valid:", is_valid_structure(best_structure))
+
+print("Best Coordinates:")
+
+for i in range(best_structure.get_length()):
+    print(
+        i + 1,
+        best_structure.get_amino_acid_type(i),
+        best_structure.get_coordinate(i)
+    )
