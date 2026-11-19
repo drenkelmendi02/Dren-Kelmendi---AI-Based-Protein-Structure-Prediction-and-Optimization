@@ -1,6 +1,7 @@
 
 from protein.representation.hp_model import convert_to_hp
 from algorithms.moves import end_move
+from algorithms.genetic_algorithm import genetic_algorithm
 from protein.representation.structure import ProteinStructure
 from algorithms.simulated_annealing import simulated_annealing
 from protein.representation.constraints import is_valid_structure
@@ -116,3 +117,26 @@ for result in benchmark_results:
     print("Best Energy:", result["best_energy"])
     print("Average Energy:", result["average_energy"])
     print("All Structures Valid:", result["all_valid"])
+
+
+ga_structure, ga_energy, ga_history = genetic_algorithm(
+    protein,
+    population_size=30,
+    generations=100,
+    mutation_rate=0.05,
+    crossover_rate=0.8
+)
+
+print("\n--- GENETIC ALGORITHM RESULTS ---")
+print("Best Energy:", ga_energy)
+print("Generations:", len(ga_history))
+print("Best Structure Valid:", is_valid_structure(ga_structure))
+
+print("Best Coordinates:")
+
+for i in range(ga_structure.get_length()):
+    print(
+        i + 1,
+        ga_structure.get_amino_acid_type(i),
+        ga_structure.get_coordinate(i)
+    )
