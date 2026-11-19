@@ -1,120 +1,134 @@
 
-
 import random
-
 from protein.representation.structure import ProteinStructure
+from protein.representation.constraints import is_valid_structure
+
+
+# Drejtimet e mundshme në hapësirën 3D
+DIRECTIONS = [
+    (1, 0, 0),   # Right
+    (-1, 0, 0),  # Left
+    (0, 1, 0),   # Up
+    (0, -1, 0),  # Down
+    (0, 0, 1),   # Forward
+    (0, 0, -1)   # Backward
+]
+
+
+def get_neighbors(coordinate):
+    x, y, z = coordinate
+
+    neighbors = []
+
+    for dx, dy, dz in DIRECTIONS:
+        neighbors.append((x + dx, y + dy, z + dz))
+
+    return neighbors
 
 
 def end_move(structure):
+    coordinates = structure.coordinates[:]
 
-    coordinates = structure.coordinates.copy()
-    length = len(coordinates)
+    endpoint = random.choice([0, len(coordinates) - 1])
 
-    if length < 2:
-        return None
-
-    # Select the first or last amino acid
-    if random.choice([True, False]):
-        index = 0
-        anchor_index = 1
-    else:
-        index = length - 1
-        anchor_index = length - 2
-
-    anchor_x, anchor_y = coordinates[anchor_index]
-
-    # Find occupied positions
     occupied = set(coordinates)
 
-    # Possible neighboring positions
-    possible_positions = [
-        (anchor_x + 1, anchor_y),
-        (anchor_x - 1, anchor_y),
-        (anchor_x, anchor_y + 1),
-        (anchor_x, anchor_y - 1)
-    ]
+    current_position = coordinates[endpoint]
 
-    # Remove occupied positions
-    valid_positions = [
-        position
-        for position in possible_positions
+    possible_positions = get_neighbors(current_position)
+
+    possible_positions = [
+        position for position in possible_positions
         if position not in occupied
     ]
 
-    if not valid_positions:
+    if not possible_positions:
         return None
 
-    # Select a random valid position
-    new_position = random.choice(valid_positions)
+    new_position = random.choice(possible_positions)
 
-    coordinates[index] = new_position
+    coordinates[endpoint] = new_position
 
-    return ProteinStructure(
+    new_structure = ProteinStructure(
         structure.hp_sequence,
         coordinates
     )
 
+    if is_valid_structure(new_structure):
+        return new_structure
+
+    return None
+
+
 def pivot_move(structure):
-    """
-    Rotate a part of the protein around a randomly
-    selected pivot amino acid.
-    """
+    coordinates = structure.coordinates[:]
 
-    coordinates = structure.coordinates.copy()
-    length = len(coordinates)
-
-    if length < 3:
+    if len(coordinates) < 3:
         return None
 
-    # Select a pivot position
-    pivot_index = random.randint(0, length - 2)
+    pivot_index = random.randint(0, len(coordinates) - 3)
 
-    pivot_x, pivot_y = coordinates[pivot_index]
+    pivot_x, pivot_y, pivot_z = coordinates[pivot_index]
 
-    # Select a rotation angle
+    rotation = random.choice(["xy", "xz", "yz"])
+
     angle = random.choice([90, 180, 270])
 
-    # Rotate all amino acids after the pivot
-    for i in range(pivot_index + 1, length):
+    new_coordinates = coordinates[:]
 
-        x, y = coordinates[i]
+    for i in range(pivot_index + 1, len(coordinates)):
+        x, y, z = coordinates[i]
 
         dx = x - pivot_x
         dy = y - pivot_y
+        dz = z - pivot_z
 
-        if angle == 90:
-            new_dx, new_dy = -dy, dx
+        if rotation == "xy":
+            if angle == 90:
+                dx, dy = -dy, dx
+            elif angle == 180:
+                dx, dy = -dx, -dy
+            else:
+                dx, dy = dy, -dx
 
-        elif angle == 180:
-            new_dx, new_dy = -dx, -dy
+        elif rotation == "xz":
+            if angle == 90:
+                dx, dz = -dz, dx
+            elif angle == 180:
+                dx, dz = -dx, -dz
+            else:
+                dx, dz = dz, -dx
 
         else:
-            new_dx, new_dy = dy, -dx
+            if angle == 90:
+                dy, dz = -dz, dy
+            elif angle == 180:
+                dy, dz = -dy, -dz
+            else:
+                dy, dz = dz, -dy
 
-        coordinates[i] = (
-            pivot_x + new_dx,
-            pivot_y + new_dy
+        new_coordinates[i] = (
+            pivot_x + dx,
+            pivot_y + dy,
+            pivot_z + dz
         )
 
-    # Reject structures with overlapping positions
-    if len(coordinates) != len(set(coordinates)):
-        return None
-
-    return ProteinStructure(
+    new_structure = ProteinStructure(
         structure.hp_sequence,
-        coordinates
+        new_coordinates
     )
+
+    if is_valid_structure(new_structure):
+        return new_structure
+
+    return None
 
 
 def random_move(structure):
-    """
-    Generate a new structure using a random
-    movement operation.
-    """
+    move_functions = [end_move, pivot_move]
 
     for _ in range(10):
-
-        move = random.choice([end_move, pivot_move])
+        move = random.choice(move_functions)
 
         new_structure = move(structure)
 
