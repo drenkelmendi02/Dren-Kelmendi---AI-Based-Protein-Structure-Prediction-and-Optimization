@@ -1,122 +1,130 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+
+import { useState } from "react";
+import ProteinViewer from "./components/ProteinViewer";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+    const [sequence, setSequence] = useState("ACDEFGHIKL");
+    const [result, setResult] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    const optimizeProtein = async () => {
+        setLoading(true);
+        setError("");
+        setResult(null);
 
-      <div className="ticks"></div>
+        try {
+            const response = await fetch("http://127.0.0.1:8000/optimize", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    sequence: sequence,
+                    iterations: 1000,
+                    initial_temperature: 10.0,
+                    cooling_rate: 0.995
+                })
+            });
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+            const data = await response.json();
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+            if (!response.ok) {
+                throw new Error(data.detail || "Optimization failed");
+            }
+
+            setResult(data);
+
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="app">
+
+            <header>
+                <h1>AI-Based Protein Structure Prediction</h1>
+                <p>3D Protein Folding and Optimization using Simulated Annealing</p>
+            </header>
+
+            <main>
+
+                <section className="input-section">
+                    <h2>Protein Sequence</h2>
+
+                    <input
+                        type="text"
+                        value={sequence}
+                        onChange={(e) => setSequence(e.target.value.toUpperCase())}
+                        placeholder="Enter amino acid sequence"
+                    />
+
+                    <button
+                        onClick={optimizeProtein}
+                        disabled={loading || !sequence.trim()}
+                    >
+                        {loading ? "Optimizing..." : "Optimize Protein"}
+                    </button>
+
+                    {error && (
+                        <p className="error">{error}</p>
+                    )}
+                </section>
+
+                {result && (
+                    <>
+                        <section className="results-section">
+                            <h2>Optimization Results</h2>
+
+                            <div className="metrics">
+                                <div className="metric">
+                                    <h3>Energy</h3>
+                                    <p>{result.energy}</p>
+                                </div>
+
+                                <div className="metric">
+                                    <h3>Iterations</h3>
+                                    <p>{result.iterations}</p>
+                                </div>
+
+                                <div className="metric">
+                                    <h3>Execution Time</h3>
+                                    <p>{result.execution_time.toFixed(4)} s</p>
+                                </div>
+
+                                <div className="metric">
+                                    <h3>Memory</h3>
+                                    <p>{result.peak_memory_mb.toFixed(4)} MB</p>
+                                </div>
+                            </div>
+
+                            <p>
+                                HP Sequence: <strong>{result.hp_sequence}</strong>
+                            </p>
+
+                            <p>
+                                Valid Structure: <strong>{result.is_valid ? "Yes" : "No"}</strong>
+                            </p>
+                        </section>
+
+                        <section className="viewer-section">
+                            <h2>3D Protein Structure</h2>
+
+                            <ProteinViewer
+                                coordinates={result.coordinates}
+                                hpSequence={result.hp_sequence}
+                            />
+                        </section>
+                    </>
+                )}
+
+            </main>
+        </div>
+    );
 }
 
-export default App
+export default App;
