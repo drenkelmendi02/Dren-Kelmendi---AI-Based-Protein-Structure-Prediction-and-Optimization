@@ -1,5 +1,6 @@
 
 from protein.representation.hp_model import convert_to_hp
+from visualization.structure_view import plot_structure, plot_energy_history
 from algorithms.moves import end_move
 from algorithms.genetic_algorithm import genetic_algorithm
 from protein.representation.structure import ProteinStructure
@@ -150,3 +151,9 @@ for i in range(ga_structure.get_length()):
         ga_structure.get_amino_acid_type(i),
         ga_structure.get_coordinate(i)
     )
+
+plot_structure(best_structure, "Simulated Annealing - Best Structure")
+plot_energy_history(energy_history, "Simulated Annealing - Energy Convergence")
+
+plot_structure(ga_structure, "Genetic Algorithm - Best Structure")
+plot_energy_history(ga_history, "Genetic Algorithm - Energy Convergence")
