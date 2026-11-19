@@ -1,9 +1,10 @@
 
 from protein.representation.hp_model import convert_to_hp
-from algorithms.moves import end_move
 from protein.representation.structure import ProteinStructure
-from algorithms.simulated_annealing import simulated_annealing
 from protein.representation.constraints import is_valid_structure
+
+from algorithms.simulated_annealing import simulated_annealing
+
 from evaluation.metrics import measure_performance
 from evaluation.energy import calculate_energy
 
@@ -17,9 +18,14 @@ hp_sequence = convert_to_hp(sequence)
 # Create initial protein structure
 protein = ProteinStructure(hp_sequence)
 
+
+print("\n========== PROTEIN INFORMATION ==========")
+
+print("Original Sequence:", sequence)
 print("HP Sequence:", hp_sequence)
 print("Protein Length:", protein.get_length())
-print("Coordinates:")
+
+print("\nInitial Coordinates:")
 
 for i in range(protein.get_length()):
     print(
@@ -28,38 +34,17 @@ for i in range(protein.get_length()):
         protein.get_coordinate(i)
     )
 
-# Check structure validity
-print("Is structure valid:", is_valid_structure(protein))
 
-# Calculate initial protein energy
-energy = calculate_energy(protein)
-print("Protein Energy:", energy)
+# Initial structure validation
+print("\nInitial Structure Valid:", is_valid_structure(protein))
 
+# Initial energy
+initial_energy = calculate_energy(protein)
 
-# Test End Move
-new_protein = end_move(protein)
-
-print("\n--- END MOVE TEST ---")
-
-if new_protein is not None:
-    print("New Coordinates:")
-
-    for i in range(new_protein.get_length()):
-        print(
-            i + 1,
-            new_protein.get_amino_acid_type(i),
-            new_protein.get_coordinate(i)
-        )
-
-    print(
-        "New Structure Valid:",
-        is_valid_structure(new_protein)
-    )
-else:
-    print("No valid move available.")
+print("Initial Energy:", initial_energy)
 
 
-# Measure Simulated Annealing performance
+# Run Simulated Annealing
 result, performance = measure_performance(
     simulated_annealing,
     protein,
@@ -70,16 +55,18 @@ result, performance = measure_performance(
 
 best_structure, best_energy, energy_history = result
 
-print("\n--- PERFORMANCE METRICS ---")
-print("Execution Time:", performance["execution_time"], "seconds")
-print("Peak Memory:", performance["peak_memory_mb"], "MB")
 
-print("\n--- SIMULATED ANNEALING RESULTS ---")
+print("\n========== SIMULATED ANNEALING RESULTS ==========")
+
 print("Best Energy:", best_energy)
 print("Iterations:", len(energy_history))
-print("Best Structure Valid:", is_valid_structure(best_structure))
 
-print("Best Coordinates:")
+print(
+    "Best Structure Valid:",
+    is_valid_structure(best_structure)
+)
+
+print("\nBest Coordinates:")
 
 for i in range(best_structure.get_length()):
     print(
@@ -88,3 +75,18 @@ for i in range(best_structure.get_length()):
         best_structure.get_coordinate(i)
     )
 
+
+# Performance metrics
+print("\n========== PERFORMANCE METRICS ==========")
+
+print(
+    "Execution Time:",
+    performance["execution_time"],
+    "seconds"
+)
+
+print(
+    "Peak Memory:",
+    performance["peak_memory_mb"],
+    "MB"
+)
