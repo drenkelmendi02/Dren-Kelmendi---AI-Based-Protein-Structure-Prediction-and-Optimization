@@ -1,27 +1,55 @@
 
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
-import { Vector3, Quaternion } from "three";
+import {
+    Canvas
+} from "@react-three/fiber";
+
+import {
+    OrbitControls,
+    Bounds,
+    Center
+} from "@react-three/drei";
+
+import {
+    Vector3,
+    Quaternion
+} from "three";
 
 
-function AminoAcid({ position, type }) {
-    const color = type === "H" ? "red" : "blue";
+/* =========================================
+   AMINO ACID
+========================================= */
+
+function AminoAcid({ position, type, index }) {
+
+    const color = type === "H" ? "#ef4444" : "#38bdf8";
 
     return (
         <mesh position={position}>
-            <sphereGeometry args={[0.35, 32, 32]} />
-            <meshStandardMaterial color={color} />
+            <sphereGeometry args={[0.22, 24, 24]} />
+
+            <meshStandardMaterial
+                color={color}
+                roughness={0.35}
+                metalness={0.15}
+            />
         </mesh>
     );
 }
 
 
+/* =========================================
+   BOND BETWEEN AMINO ACIDS
+========================================= */
+
 function Bond({ start, end }) {
+
     const startVector = new Vector3(...start);
     const endVector = new Vector3(...end);
 
-    const direction = new Vector3()
-        .subVectors(endVector, startVector);
+    const direction = new Vector3().subVectors(
+        endVector,
+        startVector
+    );
 
     const length = direction.length();
 
@@ -29,74 +57,145 @@ function Bond({ start, end }) {
         .addVectors(startVector, endVector)
         .multiplyScalar(0.5);
 
-    const quaternion = new Quaternion()
-        .setFromUnitVectors(
-            new Vector3(0, 1, 0),
-            direction.normalize()
-        );
+    const quaternion = new Quaternion();
+
+    quaternion.setFromUnitVectors(
+        new Vector3(0, 1, 0),
+        direction.clone().normalize()
+    );
 
     return (
         <mesh
             position={midpoint.toArray()}
             quaternion={quaternion}
         >
-            <cylinderGeometry args={[0.06, 0.06, length, 12]} />
-            <meshStandardMaterial color="gray" />
+            <cylinderGeometry
+                args={[0.055, 0.055, length, 12]}
+            />
+
+            <meshStandardMaterial
+                color="#94a3b8"
+                roughness={0.5}
+            />
         </mesh>
     );
 }
 
 
+/* =========================================
+   PROTEIN CHAIN
+========================================= */
+
 function ProteinChain({ coordinates, hpSequence }) {
+
+    const positions = coordinates.map((coordinate) => [
+        coordinate.x,
+        coordinate.y,
+        coordinate.z
+    ]);
+
     return (
-        <>
-            {coordinates.map((point, index) => (
-                <AminoAcid
-                    key={`amino-${index}`}
-                    position={[point.x, point.y, point.z]}
-                    type={hpSequence[index]}
+        <group>
+
+            {/* Bonds */}
+            {positions.slice(0, -1).map((position, index) => (
+                <Bond
+                    key={`bond-${index}`}
+                    start={position}
+                    end={positions[index + 1]}
                 />
             ))}
 
-            {coordinates.slice(0, -1).map((point, index) => {
-                const next = coordinates[index + 1];
 
-                return (
-                    <Bond
-                        key={`bond-${index}`}
-                        start={[point.x, point.y, point.z]}
-                        end={[next.x, next.y, next.z]}
-                    />
-                );
-            })}
-        </>
+            {/* Amino acids */}
+            {positions.map((position, index) => (
+                <AminoAcid
+                    key={`amino-${index}`}
+                    position={position}
+                    type={hpSequence[index]}
+                    index={index}
+                />
+            ))}
+
+        </group>
     );
 }
 
 
-export default function ProteinViewer({
+/* =========================================
+   MAIN 3D VIEWER
+========================================= */
+
+function ProteinViewer({
     coordinates = [],
     hpSequence = ""
 }) {
+
+    if (!coordinates.length) {
+        return (
+            <div className="protein-viewer-container">
+                <p>No protein coordinates available.</p>
+            </div>
+        );
+    }
+
     return (
-        <div style={{ width: "100%", height: "500px" }}>
-            <Canvas camera={{ position: [8, 8, 10], fov: 50 }}>
-                <ambientLight intensity={0.8} />
+        <Canvas
+            camera={{
+                position: [8, 8, 8],
+                fov: 50
+            }}
+        >
 
-                <directionalLight
-                    position={[5, 5, 5]}
-                    intensity={1.5}
-                />
+            {/* Lighting */}
+            <ambientLight intensity={0.8} />
 
-                <ProteinChain
-                    coordinates={coordinates}
-                    hpSequence={hpSequence}
-                />
+            <directionalLight
+                position={[10, 10, 10]}
+                intensity={1.5}
+            />
 
-                <OrbitControls makeDefault />
-                <gridHelper args={[20, 20]} />
-                <axesHelper args={[5]} />
-            </Canvas>
-        </div>
+            <pointLight
+                position={[-10, -10, -10]}
+                intensity={0.5}
+            />
+
+
+            {/* Protein visualization */}
+            <Bounds
+                fit
+                clip
+                observe
+                margin={1.5}
+            >
+                <Center>
+                    <ProteinChain
+                        coordinates={coordinates}
+                        hpSequence={hpSequence}
+                    />
+                </Center>
+            </Bounds>
+
+
+            {/* Reference grid */}
+            <gridHelper
+                args={[20, 20, "#334155", "#1e293b"]}
+            />
+
+            <axesHelper args={[3]} />
+
+
+            {/* Mouse controls */}
+            <OrbitControls
+                makeDefault
+                enableDamping
+                dampingFactor={0.08}
+                minDistance={2}
+                maxDistance={100}
+            />
+
+        </Canvas>
     );
 }
+
+export default ProteinViewer;
