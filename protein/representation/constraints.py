@@ -1,17 +1,24 @@
 
-def has_overlaps(coordinates):
+def _get_coordinates(structure):
+    if hasattr(structure, "coordinates"):
+        return structure.coordinates
+
+    return structure
+
+
+def has_overlaps(structure):
+    coordinates = _get_coordinates(structure)
+
     return len(coordinates) != len(set(coordinates))
 
 
-def has_valid_connections(coordinates):
-    for i in range(len(coordinates) - 1):
-        x1, y1, z1 = coordinates[i]
-        x2, y2, z2 = coordinates[i + 1]
+def has_valid_connections(structure):
+    coordinates = _get_coordinates(structure)
 
-        distance = (
-            abs(x2 - x1) +
-            abs(y2 - y1) +
-            abs(z2 - z1)
+    for i in range(len(coordinates) - 1):
+        distance = sum(
+            abs(coordinates[i][j] - coordinates[i + 1][j])
+            for j in range(3)
         )
 
         if distance != 1:
@@ -21,12 +28,7 @@ def has_valid_connections(coordinates):
 
 
 def is_valid_structure(structure):
-    coordinates = structure.coordinates
-
-    if has_overlaps(coordinates):
-        return False
-
-    if not has_valid_connections(coordinates):
-        return False
-
-    return True
+    return (
+        not has_overlaps(structure)
+        and has_valid_connections(structure)
+    )
