@@ -492,3 +492,39 @@ input {
         grid-template-columns: 1fr;
     }
 }
+
+/* =========================================
+   OPTIMIZATION PARAMETERS
+========================================= */
+
+.input-section h3 {
+    margin-top: 28px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    color: #38bdf8;
+    font-size: 17px;
+    border-bottom: 1px solid #263449;
+}
+
+.input-section label {
+    display: block;
+    margin-top: 16px;
+    margin-bottom: 8px;
+    color: #cbd5e1;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.input-section .sequence-input {
+    margin-top: 0;
+    margin-bottom: 16px;
+}
+
+.input-section input[type="number"] {
+    letter-spacing: normal;
+}
+
+.input-section input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
