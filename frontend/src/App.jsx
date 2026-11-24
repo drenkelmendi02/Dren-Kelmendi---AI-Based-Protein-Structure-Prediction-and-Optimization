@@ -6,9 +6,17 @@ import EnergyChart from "./components/EnergyChart";
 
 import "./App.css";
 
-
 function App() {
     const [sequence, setSequence] = useState("ACDEFGHIKL");
+
+    const [hydrophobicWeight, setHydrophobicWeight] = useState(1.0);
+    const [iterations, setIterations] = useState(1000);
+    const [initialTemperature, setInitialTemperature] = useState(10);
+    const [coolingRate, setCoolingRate] = useState(0.995);
+    const [populationSize, setPopulationSize] = useState(30);
+    const [generations, setGenerations] = useState(100);
+    const [mutationRate, setMutationRate] = useState(0.3);
+    const [crossoverRate, setCrossoverRate] = useState(0.8);
 
     const [results, setResults] = useState(null);
 
@@ -33,14 +41,15 @@ function App() {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        sequence: sequence,
-                        iterations: 1000,
-                        initial_temperature: 10,
-                        cooling_rate: 0.995,
-                        population_size: 30,
-                        generations: 100,
-                        mutation_rate: 0.3,
-                        crossover_rate: 0.8
+                        sequence: sequence.trim().toUpperCase(),
+                        hydrophobic_contact_weight: Number(hydrophobicWeight),
+                        iterations: Number(iterations),
+                        initial_temperature: Number(initialTemperature),
+                        cooling_rate: Number(coolingRate),
+                        population_size: Number(populationSize),
+                        generations: Number(generations),
+                        mutation_rate: Number(mutationRate),
+                        crossover_rate: Number(crossoverRate)
                     })
                 }
             );
@@ -70,6 +79,53 @@ function App() {
 
     const comparison = results?.comparison;
 
+    const renderStatistics = (result) => {
+        const stats = result?.statistics;
+
+        if (!stats) return null;
+
+        return (
+            <div className="info-grid">
+                <div className="info-card">
+                    <span>Candidate Configurations</span>
+                    <strong>{stats.candidate_configurations}</strong>
+                </div>
+
+                <div className="info-card">
+                    <span>Valid Structures</span>
+                    <strong>{stats.valid_structures}</strong>
+                </div>
+
+                <div className="info-card">
+                    <span>Invalid Structures</span>
+                    <strong>{stats.invalid_structures}</strong>
+                </div>
+
+                <div className="info-card">
+                    <span>Duplicate Structures</span>
+                    <strong>{stats.duplicate_structures}</strong>
+                </div>
+
+                <div className="info-card">
+                    <span>Unique Structures</span>
+                    <strong>{stats.unique_structures}</strong>
+                </div>
+
+                <div className="info-card">
+                    <span>Energy Evaluations</span>
+                    <strong>{stats.energy_evaluations}</strong>
+                </div>
+
+                <div className="info-card">
+                    <span>Search Space Reduction</span>
+                    <strong>
+                        {stats.elimination_percentage.toFixed(2)}%
+                    </strong>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="app-container">
 
@@ -84,7 +140,6 @@ function App() {
                     </p>
                 </div>
             </header>
-
 
             {/* INPUT SECTION */}
             <section className="input-section">
@@ -106,9 +161,143 @@ function App() {
                     className="sequence-input"
                 />
 
+                <h3>Energy Parameters</h3>
+
+                <label>
+                    Hydrophobic Contact Weight
+                </label>
+
+                <input
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value={hydrophobicWeight}
+                    onChange={(event) =>
+                        setHydrophobicWeight(event.target.value)
+                    }
+                    className="sequence-input"
+                />
+
+                <h3>Simulated Annealing Parameters</h3>
+
+                <label>Maximum Iterations</label>
+
+                <input
+                    type="number"
+                    min="1"
+                    value={iterations}
+                    onChange={(event) =>
+                        setIterations(event.target.value)
+                    }
+                    className="sequence-input"
+                />
+
+                <label>Initial Temperature</label>
+
+                <input
+                    type="number"
+                    min="0.1"
+                    step="0.1"
+                    value={initialTemperature}
+                    onChange={(event) =>
+                        setInitialTemperature(event.target.value)
+                    }
+                    className="sequence-input"
+                />
+
+                <label>Cooling Rate</label>
+
+                <input
+                    type="number"
+                    min="0.0001"
+                    max="1"
+                    step="0.001"
+                    value={coolingRate}
+                    onChange={(event) =>
+                        setCoolingRate(event.target.value)
+                    }
+                    className="sequence-input"
+                />
+
+                <h3>Genetic Algorithm Parameters</h3>
+
+                <label>Population Size</label>
+
+                <input
+                    type="number"
+                    min="2"
+                    value={populationSize}
+                    onChange={(event) =>
+                        setPopulationSize(event.target.value)
+                    }
+                    className="sequence-input"
+                />
+
+                <label>Generations</label>
+
+                <input
+                    type="number"
+                    min="1"
+                    value={generations}
+                    onChange={(event) =>
+                        setGenerations(event.target.value)
+                    }
+                    className="sequence-input"
+                />
+
+                <label>Mutation Rate</label>
+
+                <input
+                    type="number"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={mutationRate}
+                    onChange={(event) =>
+                        setMutationRate(event.target.value)
+                    }
+                    className="sequence-input"
+                />
+
+                <label>Crossover Rate</label>
+
+                <input
+                    type="number"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={crossoverRate}
+                    onChange={(event) =>
+                        setCrossoverRate(event.target.value)
+                    }
+                    className="sequence-input"
+                />
+
                 <button
                     onClick={optimizeProtein}
-                    disabled={loading || !sequence.trim()}
+                    disabled={
+                        loading ||
+                        !sequence.trim() ||
+                        !Number.isFinite(Number(hydrophobicWeight)) ||
+                        Number(hydrophobicWeight) < 0 ||
+                        !Number.isInteger(Number(iterations)) ||
+                        Number(iterations) < 1 ||
+                        !Number.isFinite(Number(initialTemperature)) ||
+                        Number(initialTemperature) <= 0 ||
+                        !Number.isFinite(Number(coolingRate)) ||
+                        Number(coolingRate) <= 0 ||
+                        Number(coolingRate) > 1 ||
+                        !Number.isInteger(Number(populationSize)) ||
+                        Number(populationSize) < 2 ||
+                        !Number.isInteger(Number(generations)) ||
+                        Number(generations) < 1 ||
+                        !Number.isFinite(Number(mutationRate)) ||
+                        Number(mutationRate) < 0 ||
+                        Number(mutationRate) > 1 ||
+                        !Number.isFinite(Number(crossoverRate)) ||
+                        Number(crossoverRate) < 0 ||
+                        Number(crossoverRate) > 1
+                    }
                     className="optimize-button"
                 >
                     {loading ? "Optimizing..." : "Optimize Protein"}
@@ -122,7 +311,6 @@ function App() {
 
             </section>
 
-
             {/* LOADING */}
             {loading && (
                 <div className="loading-section">
@@ -132,7 +320,6 @@ function App() {
                     </p>
                 </div>
             )}
-
 
             {/* RESULTS */}
             {results && (
@@ -160,10 +347,16 @@ function App() {
                                 <strong>{results.sequence.length}</strong>
                             </div>
 
+                            <div className="info-card">
+                                <span>Hydrophobic Contact Weight</span>
+                                <strong>
+                                    {results.hydrophobic_contact_weight}
+                                </strong>
+                            </div>
+
                         </div>
 
                     </section>
-
 
                     {/* ALGORITHM SELECTION */}
                     <section className="results-section">
@@ -200,7 +393,6 @@ function App() {
 
                         </div>
 
-
                         {selectedResult && (
                             <>
 
@@ -235,7 +427,6 @@ function App() {
 
                                 </div>
 
-
                                 {/* ALGORITHM DETAILS */}
                                 <div className="algorithm-details">
 
@@ -246,76 +437,22 @@ function App() {
                                     </h3>
 
                                     {selectedAlgorithm === "simulated_annealing" ? (
-
                                         <p>
                                             Iterations: {selectedResult.iterations}
                                         </p>
-
                                     ) : (
-
                                         <>
                                             <p>
                                                 Generations: {selectedResult.generations}
                                             </p>
-
-                                            <div className="info-grid">
-
-                                                <div className="info-card">
-                                                    <span>Candidate Configurations</span>
-                                                    <strong>
-                                                        {selectedResult.statistics.candidate_configurations}
-                                                    </strong>
-                                                </div>
-
-                                                <div className="info-card">
-                                                    <span>Valid Structures</span>
-                                                    <strong>
-                                                        {selectedResult.statistics.valid_structures}
-                                                    </strong>
-                                                </div>
-
-                                                <div className="info-card">
-                                                    <span>Invalid Structures</span>
-                                                    <strong>
-                                                        {selectedResult.statistics.invalid_structures}
-                                                    </strong>
-                                                </div>
-
-                                                <div className="info-card">
-                                                    <span>Duplicate Structures</span>
-                                                    <strong>
-                                                        {selectedResult.statistics.duplicate_structures}
-                                                    </strong>
-                                                </div>
-
-                                                <div className="info-card">
-                                                    <span>Unique Structures</span>
-                                                    <strong>
-                                                        {selectedResult.statistics.unique_structures}
-                                                    </strong>
-                                                </div>
-
-                                                <div className="info-card">
-                                                    <span>Energy Evaluations</span>
-                                                    <strong>
-                                                        {selectedResult.statistics.energy_evaluations}
-                                                    </strong>
-                                                </div>
-
-                                                <div className="info-card">
-                                                    <span>Elimination Percentage</span>
-                                                    <strong>
-                                                        {selectedResult.statistics.elimination_percentage.toFixed(2)}%
-                                                    </strong>
-                                                </div>
-
-                                            </div>
                                         </>
-
                                     )}
 
-                                </div>
+                                    <h3>Search Statistics</h3>
 
+                                    {renderStatistics(selectedResult)}
+
+                                </div>
 
                                 {/* 3D PROTEIN VIEWER */}
                                 <section className="visualization-section">
@@ -339,7 +476,6 @@ function App() {
 
                                 </section>
 
-
                                 {/* ENERGY CHART */}
                                 <section className="visualization-section">
 
@@ -355,7 +491,6 @@ function App() {
                         )}
 
                     </section>
-
 
                     {/* ALGORITHM COMPARISON */}
                     <section className="results-section">
@@ -389,8 +524,9 @@ function App() {
                                     </strong>
                                 </p>
 
-                            </div>
+                                {renderStatistics(saResult)}
 
+                            </div>
 
                             <div className="comparison-card">
 
@@ -417,10 +553,11 @@ function App() {
                                     </strong>
                                 </p>
 
+                                {renderStatistics(gaResult)}
+
                             </div>
 
                         </div>
-
 
                         <div className="comparison-summary">
 
@@ -448,13 +585,15 @@ function App() {
                 </>
             )}
 
-
             {/* FOOTER */}
             <footer className="app-footer">
                 <p>
                     AI-Based Protein Structure Prediction and Optimization
                 </p>
-                <span>3D HP Lattice Model | Simulated Annealing | Genetic Algorithm</span>
+
+                <span>
+                    3D HP Lattice Model | Simulated Annealing | Genetic Algorithm
+                </span>
             </footer>
 
         </div>

@@ -13,16 +13,14 @@ def simulated_annealing(
     initial_temperature=10.0,
     cooling_rate=0.995,
     iterations=1000,
-    return_stats=False
+    return_stats=False,
+    hydrophobic_contact_weight=1.0
 ):
     """
-    Simulated Annealing për optimizimin e strukturës së proteinës.
+    Simulated Annealing for protein structure optimization.
 
-    Objektivi:
-    Minimizimi i energjisë E = -N_HH.
-
-    Nëse return_stats=True, kthen edhe statistikat
-    e konfigurimeve të eksploruara.
+    Objective:
+    Minimize the energy E = -w * N_HH.
     """
 
     if initial_temperature <= 0:
@@ -34,27 +32,29 @@ def simulated_annealing(
     if iterations < 0:
         raise ValueError("Iterations cannot be negative.")
 
+    if hydrophobic_contact_weight < 0:
+        raise ValueError("Hydrophobic contact weight cannot be negative.")
+
     if not is_valid_structure(initial_structure):
         raise ValueError("Initial protein structure is invalid.")
 
-    # Struktura dhe energjia fillestare.
     current_structure = initial_structure
-    current_energy = calculate_energy(current_structure)
+    current_energy = calculate_energy(
+        current_structure,
+        hydrophobic_contact_weight
+    )
 
     best_structure = current_structure
     best_energy = current_energy
 
     temperature = initial_temperature
 
-    # Historiku fillon me energjinë fillestare.
     energy_history = [current_energy]
 
-    # Ruajtja e konfigurimeve të vizituara.
     visited_states = {
         get_structure_signature(initial_structure)
     }
 
-    # Statistikat e algoritmit.
     statistics = {
         "candidate_configurations": 0,
         "valid_structures": 0,
@@ -70,10 +70,8 @@ def simulated_annealing(
 
         statistics["candidate_configurations"] += 1
 
-        # Gjenerimi i një konfigurimi të ri.
         new_structure = random_move(current_structure)
 
-        # Nëse nuk gjendet lëvizje valide.
         if new_structure is None:
             statistics["invalid_structures"] += 1
             energy_history.append(current_energy)
@@ -86,7 +84,6 @@ def simulated_annealing(
 
             continue
 
-        # Kontrollimi i validitetit.
         if not is_valid_structure(new_structure):
             statistics["invalid_structures"] += 1
             energy_history.append(current_energy)
@@ -101,7 +98,6 @@ def simulated_annealing(
 
         statistics["valid_structures"] += 1
 
-        # Kontrollimi i konfigurimeve të përsëritura.
         signature = get_structure_signature(new_structure)
 
         if signature in visited_states:
@@ -116,18 +112,18 @@ def simulated_annealing(
 
             continue
 
-        # Regjistrimi i konfigurimit unik.
         visited_states.add(signature)
         statistics["unique_structures"] += 1
 
-        # Llogaritja e energjisë vetëm për konfigurime unike.
-        new_energy = calculate_energy(new_structure)
+        new_energy = calculate_energy(
+            new_structure,
+            hydrophobic_contact_weight
+        )
+
         statistics["energy_evaluations"] += 1
 
-        # Diferenca e energjisë.
         delta_energy = new_energy - current_energy
 
-        # Pranimi i zgjidhjes.
         if delta_energy <= 0:
             current_structure = new_structure
             current_energy = new_energy
@@ -141,7 +137,6 @@ def simulated_annealing(
                 current_structure = new_structure
                 current_energy = new_energy
 
-        # Ruajtja e zgjidhjes më të mirë.
         if current_energy < best_energy:
             best_structure = current_structure
             best_energy = current_energy
@@ -150,13 +145,11 @@ def simulated_annealing(
 
         statistics["iterations_completed"] += 1
 
-        # Ulja e temperaturës.
         temperature *= cooling_rate
 
         if temperature < 1e-10:
             break
 
-    # Llogaritja e përqindjes së konfigurimeve të eliminuara.
     total_candidates = statistics["candidate_configurations"]
 
     eliminated = (

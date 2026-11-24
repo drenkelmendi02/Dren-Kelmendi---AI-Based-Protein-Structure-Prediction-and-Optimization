@@ -38,6 +38,12 @@ app.add_middleware(
 class ProteinRequest(BaseModel):
     sequence: str
 
+    # Energy parameter
+    hydrophobic_contact_weight: float = Field(
+        default=1.0,
+        ge=0
+    )
+
     # Simulated Annealing
     iterations: int = Field(default=1000, ge=1, le=100000)
     initial_temperature: float = Field(default=10.0, gt=0)
@@ -95,29 +101,27 @@ def health_check():
 def optimize_protein(request: ProteinRequest):
 
     try:
-        # 1. Validimi i sekuencës.
+        # 1. Validate amino acid sequence.
         sequence = validate_sequence(request.sequence)
 
-        # 2. Konvertimi në modelin HP.
+        # 2. Convert sequence into HP representation.
         hp_sequence = convert_to_hp(sequence)
 
-        # 3. Krijimi i strukturës fillestare.
+        # 3. Create initial protein structure.
         initial_structure = ProteinStructure(hp_sequence)
 
         if not is_valid_structure(initial_structure):
             raise ValueError("Initial protein structure is invalid.")
 
-        # ==========================================
-        # SIMULATED ANNEALING
-        # ==========================================
-
+        # 4. Simulated Annealing.
         sa_result, sa_performance = measure_performance(
             simulated_annealing,
             initial_structure,
             initial_temperature=request.initial_temperature,
             cooling_rate=request.cooling_rate,
             iterations=request.iterations,
-            return_stats=True
+            return_stats=True,
+            hydrophobic_contact_weight=request.hydrophobic_contact_weight
         )
 
         (
@@ -137,10 +141,7 @@ def optimize_protein(request: ProteinRequest):
 
         sa_data["iterations"] = sa_statistics["iterations_completed"]
 
-        # ==========================================
-        # GENETIC ALGORITHM
-        # ==========================================
-
+        # 5. Genetic Algorithm.
         ga_result, ga_performance = measure_performance(
             genetic_algorithm,
             initial_structure,
@@ -148,7 +149,8 @@ def optimize_protein(request: ProteinRequest):
             generations=request.generations,
             mutation_rate=request.mutation_rate,
             crossover_rate=request.crossover_rate,
-            return_stats=True
+            return_stats=True,
+            hydrophobic_contact_weight=request.hydrophobic_contact_weight
         )
 
         (
@@ -168,10 +170,7 @@ def optimize_protein(request: ProteinRequest):
 
         ga_data["generations"] = len(ga_history) - 1
 
-        # ==========================================
-        # KRAHASIMI I ALGORITMEVE
-        # ==========================================
-
+        # 6. Compare algorithms.
         comparison = {
             "best_energy": (
                 "Genetic Algorithm"
@@ -196,15 +195,15 @@ def optimize_protein(request: ProteinRequest):
             )
         }
 
-        # ==========================================
-        # RESPONSE
-        # ==========================================
-
+        # 7. Return results.
         return {
             "sequence": sequence,
             "hp_sequence": hp_sequence,
 
-            # Rezultatet kryesore të SA për frontend-in aktual.
+            "hydrophobic_contact_weight":
+                request.hydrophobic_contact_weight,
+
+            # Main SA results for existing frontend compatibility.
             "coordinates": sa_data["coordinates"],
             "energy": sa_data["energy"],
             "energy_history": sa_data["energy_history"],
@@ -213,13 +212,12 @@ def optimize_protein(request: ProteinRequest):
             "execution_time": sa_data["execution_time"],
             "peak_memory_mb": sa_data["peak_memory_mb"],
 
-            # Rezultatet e të dy algoritmeve.
+            # Results of both algorithms.
             "algorithms": {
                 "simulated_annealing": sa_data,
                 "genetic_algorithm": ga_data
             },
 
-            # Krahasimi automatik.
             "comparison": comparison
         }
 
