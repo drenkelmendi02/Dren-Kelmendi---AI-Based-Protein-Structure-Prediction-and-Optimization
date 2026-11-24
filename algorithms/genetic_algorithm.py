@@ -135,11 +135,10 @@ def crossover(parent1, parent2):
     coordinates1 = parent1.coordinates
     coordinates2 = parent2.coordinates
 
-    # Pjesa e parë merret nga prindi 1.
     child_coordinates = list(coordinates1[:cut_point])
 
-    # Pjesa e dytë merret nga prindi 2 dhe zhvendoset
-    # në mënyrë që lidhja në pikën e prerjes të ruhet.
+    # Zhvendosja e pjesës së dytë për të ruajtur
+    # lidhjen mes aminoacideve në pikën e prerjes.
     p1_x, p1_y, p1_z = coordinates1[cut_point - 1]
     p2_x, p2_y, p2_z = coordinates2[cut_point - 1]
 
@@ -195,6 +194,25 @@ def genetic_algorithm(
     Minimizimi i energjisë E = -N_HH.
     """
 
+    # Kontrollimi i parametrave.
+    if population_size < 2:
+        raise ValueError("Population size must be at least 2.")
+
+    if generations < 1:
+        raise ValueError("Generations must be at least 1.")
+
+    if not 0 <= mutation_rate <= 1:
+        raise ValueError("Mutation rate must be between 0 and 1.")
+
+    if not 0 <= crossover_rate <= 1:
+        raise ValueError("Crossover rate must be between 0 and 1.")
+
+    if tournament_size < 1:
+        raise ValueError("Tournament size must be at least 1.")
+
+    if not is_valid_structure(initial_structure):
+        raise ValueError("Initial structure must be valid.")
+
     hp_sequence = initial_structure.hp_sequence
 
     # Statistikat e algoritmit.
@@ -233,33 +251,37 @@ def genetic_algorithm(
 
     energy_history = [best_energy]
 
-    # Ruajtja e strukturës fillestare nëse është valide.
-    if is_valid_structure(initial_structure):
-        statistics["candidate_configurations"] += 1
-        statistics["valid_structures"] += 1
+    # Regjistrimi i strukturës fillestare.
+    initial_signature = get_structure_signature(
+        initial_structure
+    )
 
-        initial_signature = get_structure_signature(
+    statistics["candidate_configurations"] += 1
+    statistics["valid_structures"] += 1
+
+    if initial_signature in visited_states:
+        statistics["duplicate_structures"] += 1
+    else:
+        register_structure(
+            initial_structure,
+            visited_states
+        )
+
+        statistics["unique_structures"] += 1
+
+    # Përdorimi i Energy Cache.
+    if initial_signature not in energy_cache:
+        energy_cache[initial_signature] = calculate_energy(
             initial_structure
         )
 
-        if initial_signature not in visited_states:
-            register_structure(
-                initial_structure,
-                visited_states
-            )
+        statistics["energy_evaluations"] += 1
 
-            statistics["unique_structures"] += 1
+    initial_energy = energy_cache[initial_signature]
 
-            initial_energy = calculate_energy(initial_structure)
-            statistics["energy_evaluations"] += 1
-
-            energy_cache[initial_signature] = initial_energy
-
-            if initial_energy < best_energy:
-                best_structure = initial_structure
-                best_energy = initial_energy
-        else:
-            statistics["duplicate_structures"] += 1
+    if initial_energy < best_energy:
+        best_structure = initial_structure
+        best_energy = initial_energy
 
     # Evolucioni i popullatës.
     for generation in range(generations):
@@ -284,7 +306,17 @@ def genetic_algorithm(
                 evaluated_population[1][0]
             )
 
-        while len(new_population) < population_size:
+        # Kufizimi i tentimeve për të parandaluar
+        # ciklet e pafundme gjatë krijimit të popullatës.
+        max_attempts = population_size * 100
+        attempts = 0
+
+        while (
+            len(new_population) < population_size
+            and attempts < max_attempts
+        ):
+
+            attempts += 1
 
             parent1 = selection(
                 evaluated_population,
@@ -302,7 +334,6 @@ def genetic_algorithm(
             else:
                 child = parent1
 
-            # Nëse crossover dështon, përdoret prindi.
             if child is None:
                 statistics["candidate_configurations"] += 1
                 statistics["invalid_structures"] += 1
@@ -327,21 +358,22 @@ def genetic_algorithm(
 
             signature = get_structure_signature(child)
 
-            # Kontrollimi i dublikimeve.
+            # Eliminimi i strukturave duplikate.
             if signature in visited_states:
                 statistics["duplicate_structures"] += 1
                 continue
 
             register_structure(child, visited_states)
+
             statistics["unique_structures"] += 1
 
             new_population.append(child)
 
-        # Nëse nuk arrihet madhësia e popullatës,
-        # plotësohet me individët më të mirë aktualë.
+        # Plotësimi i popullatës nëse nuk janë krijuar
+        # mjaftueshëm struktura të reja.
         while len(new_population) < population_size:
             new_population.append(
-                random.choice(population)
+                random.choice(evaluated_population)[0]
             )
 
         population = new_population
@@ -364,7 +396,7 @@ def genetic_algorithm(
 
         energy_history.append(best_energy)
 
-    # Përqindja e konfigurimeve të eliminuara.
+    # Llogaritja e përqindjes së konfigurimeve të eliminuara.
     total_candidates = statistics["candidate_configurations"]
 
     eliminated = (
