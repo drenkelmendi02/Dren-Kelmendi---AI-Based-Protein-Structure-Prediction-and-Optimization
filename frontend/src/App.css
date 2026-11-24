@@ -1,158 +1,294 @@
 
+/* =========================================
+   GLOBAL APP DESIGN
+========================================= */
+
+#root {
+    width: 100%;
+    min-height: 100vh;
+}
+
 * {
-    margin: 0;
-    padding: 0;
     box-sizing: border-box;
 }
 
 body {
-    font-family: Arial, sans-serif;
-    background-color: #0f172a;
-    color: #f8fafc;
+    margin: 0;
+    font-family: "Inter", "Segoe UI", Arial, sans-serif;
+    background: #0b1120;
+    color: #e5e7eb;
 }
 
-.app {
-    min-height: 100vh;
-    padding: 30px;
+button,
+input {
+    font: inherit;
 }
 
-header {
-    text-align: center;
-    margin-bottom: 40px;
-}
-
-header h1 {
-    font-size: 32px;
-    color: #38bdf8;
-    margin-bottom: 12px;
-}
-
-header p {
-    color: #94a3b8;
-    font-size: 16px;
-}
-
-main {
-    max-width: 1200px;
-    margin: auto;
-}
-
-.input-section,
-.results-section,
-.viewer-section {
-    background-color: #1e293b;
-    padding: 25px;
-    border-radius: 12px;
-    margin-bottom: 25px;
-}
-
-h2 {
-    margin-bottom: 20px;
-    color: #38bdf8;
-}
-
-.input-section input {
+.app-container {
     width: 100%;
-    padding: 14px;
-    border: 1px solid #475569;
-    border-radius: 8px;
-    background-color: #0f172a;
-    color: white;
-    font-size: 16px;
-    margin-bottom: 15px;
+    min-height: 100vh;
+    padding: 35px 7%;
 }
 
-.input-section button {
-    padding: 13px 25px;
-    background-color: #0284c7;
-    color: white;
+
+/* =========================================
+   HEADER
+========================================= */
+
+.app-header {
+    padding: 35px 0;
+    margin-bottom: 35px;
+    border-bottom: 1px solid #263449;
+}
+
+.app-header h1 {
+    margin: 0 0 12px;
+    font-size: 32px;
+    font-weight: 750;
+    color: #f8fafc;
+    letter-spacing: -0.8px;
+}
+
+.app-header p {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 15px;
+}
+
+
+/* =========================================
+   INPUT SECTION
+========================================= */
+
+.input-section {
+    background: #111c30;
+    border: 1px solid #263449;
+    border-radius: 14px;
+    padding: 28px;
+    margin-bottom: 30px;
+}
+
+.input-section h2,
+.results-section h2,
+.visualization-section h2 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: #f8fafc;
+    font-size: 21px;
+}
+
+.input-section p {
+    color: #94a3b8;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.sequence-input {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    margin: 20px 0;
+    color: #f8fafc;
+    background: #0b1120;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    outline: none;
+    font-size: 15px;
+    letter-spacing: 1px;
+}
+
+.sequence-input:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12);
+}
+
+.optimize-button {
+    padding: 13px 24px;
     border: none;
     border-radius: 8px;
-    font-size: 16px;
+    background: #0284c7;
+    color: white;
+    font-weight: 650;
     cursor: pointer;
-    transition: 0.3s;
+    transition: 0.2s ease;
 }
 
-.input-section button:hover {
-    background-color: #0369a1;
+.optimize-button:hover:not(:disabled) {
+    background: #0369a1;
+    transform: translateY(-1px);
 }
 
-.input-section button:disabled {
-    opacity: 0.5;
+.optimize-button:disabled {
+    opacity: 0.55;
     cursor: not-allowed;
 }
 
-.error {
-    color: #f87171;
-    margin-top: 15px;
-}
 
-.metrics {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
-    margin-bottom: 25px;
-}
+/* =========================================
+   LOADING AND ERROR
+========================================= */
 
-.metric {
-    background-color: #0f172a;
+.loading-section {
+    margin: 25px 0;
     padding: 20px;
-    border-radius: 8px;
     text-align: center;
+    color: #7dd3fc;
+    background: #10243a;
+    border: 1px solid #1e4970;
+    border-radius: 10px;
 }
 
-.metric h3 {
+.error-message {
+    color: #fca5a5 !important;
+    background: #3b151c;
+    border: 1px solid #7f1d1d;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 18px;
+}
+
+
+/* =========================================
+   RESULTS SECTION
+========================================= */
+
+.results-section {
+    background: #111c30;
+    border: 1px solid #263449;
+    border-radius: 14px;
+    padding: 28px;
+    margin-bottom: 30px;
+}
+
+.results-section > h2 {
+    margin-bottom: 22px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 15px;
+    margin: 22px 0;
+}
+
+.info-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+    padding: 20px;
+    background: #0b1425;
+    border: 1px solid #263449;
+    border-radius: 10px;
+}
+
+.info-card span {
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+.info-card strong {
+    color: #38bdf8;
+    font-size: 19px;
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================
+   ALGORITHM TABS
+========================================= */
+
+.algorithm-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 22px 0;
+}
+
+.algorithm-tab {
+    padding: 12px 20px;
+    color: #cbd5e1;
+    background: #0b1425;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.algorithm-tab:hover {
+    border-color: #38bdf8;
+    color: #f8fafc;
+}
+
+.algorithm-tab.active {
+    color: white;
+    background: #075985;
+    border-color: #0284c7;
+}
+
+
+/* =========================================
+   ALGORITHM DETAILS
+========================================= */
+
+.algorithm-details {
+    margin-top: 28px;
+    padding: 22px;
+    background: #0d1729;
+    border: 1px solid #263449;
+    border-radius: 10px;
+}
+
+.algorithm-details h3,
+.comparison-summary h3 {
+    margin-top: 0;
+    color: #f8fafc;
+    font-size: 17px;
+}
+
+.algorithm-details p {
+    color: #cbd5e1;
+    font-size: 14px;
+}
+
+
+/* =========================================
+   VISUALIZATION
+========================================= */
+
+.visualization-section {
+    margin-top: 35px;
+}
+
+.visualization-section > p {
     color: #94a3b8;
     font-size: 14px;
-    margin-bottom: 12px;
+    line-height: 1.6;
 }
 
-.metric p {
-    color: #38bdf8;
-    font-size: 24px;
-    font-weight: bold;
-}
-
-.results-section > p {
-    margin-top: 12px;
-    color: #cbd5e1;
-}
-
-.viewer-section > div {
+.protein-viewer-container {
+    width: 100%;
+    height: 480px;
+    margin-top: 20px;
     overflow: hidden;
-    border-radius: 8px;
+    background: #080e1b;
+    border: 1px solid #263449;
+    border-radius: 12px;
 }
 
-@media (max-width: 768px) {
-    .app {
-        padding: 15px;
-    }
 
-    header h1 {
-        font-size: 24px;
-    }
-
-    .metrics {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 450px) {
-    .metrics {
-        grid-template-columns: 1fr;
-    }
-}
+/* =========================================
+   ENERGY CHART
+========================================= */
 
 .energy-chart {
-    background-color: #0f172a;
-    padding: 25px;
-    border-radius: 10px;
+    width: 100%;
     margin-top: 20px;
-}
-
-.energy-chart h2 {
-    color: #38bdf8;
-    margin-bottom: 20px;
+    padding: 20px;
+    background: #0b1425;
+    border: 1px solid #263449;
+    border-radius: 10px;
+    overflow: hidden;
 }
 
 .energy-chart svg {
@@ -161,14 +297,136 @@ h2 {
     height: auto;
 }
 
-.energy-chart p {
-    color: #cbd5e1;
-    font-size: 14px;
-    margin-top: 12px;
+.energy-chart text {
+    fill: #94a3b8;
+    font-size: 12px;
 }
 
-@media (max-width: 600px) {
-    .energy-chart {
-        padding: 15px;
+
+/* =========================================
+   ALGORITHM COMPARISON
+========================================= */
+
+.comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin: 22px 0;
+}
+
+.comparison-card {
+    padding: 23px;
+    background: #0b1425;
+    border: 1px solid #263449;
+    border-radius: 10px;
+}
+
+.comparison-card h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #38bdf8;
+    font-size: 17px;
+}
+
+.comparison-card p,
+.comparison-summary p {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    color: #94a3b8;
+    font-size: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #263449;
+}
+
+.comparison-card strong,
+.comparison-summary strong {
+    color: #f8fafc;
+    text-align: right;
+}
+
+.comparison-summary {
+    margin-top: 25px;
+    padding: 24px;
+    background: #10243a;
+    border: 1px solid #1e4970;
+    border-radius: 10px;
+}
+
+.comparison-summary h3 {
+    color: #7dd3fc;
+}
+
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.app-footer {
+    padding: 30px 0;
+    margin-top: 40px;
+    border-top: 1px solid #263449;
+    text-align: center;
+}
+
+.app-footer p {
+    margin-bottom: 8px;
+    color: #cbd5e1;
+    font-size: 14px;
+}
+
+.app-footer span {
+    color: #64748b;
+    font-size: 12px;
+}
+
+
+/* =========================================
+   RESPONSIVE DESIGN
+========================================= */
+
+@media (max-width: 768px) {
+    .app-container {
+        padding: 20px 5%;
+    }
+
+    .app-header h1 {
+        font-size: 25px;
+    }
+
+    .input-section,
+    .results-section {
+        padding: 20px;
+    }
+
+    .comparison-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .protein-viewer-container {
+        height: 350px;
+    }
+
+    .algorithm-tabs {
+        flex-direction: column;
+    }
+
+    .algorithm-tab {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-header h1 {
+        font-size: 21px;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .protein-viewer-container {
+        height: 300px;
     }
 }
