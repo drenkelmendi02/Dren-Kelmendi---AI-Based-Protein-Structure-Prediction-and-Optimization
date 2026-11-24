@@ -42,8 +42,7 @@ class TestProteinRepresentation(unittest.TestCase):
         self.assertEqual(counts["C"], 2)
 
     def test_hp_conversion(self):
-        self.assertEqual(convert_to_hp("ACDEFG"), "HHPHPH")
-
+        self.assertEqual(convert_to_hp("ACDEFG"), "HHPPHP")
     def test_initial_structure(self):
         structure = ProteinStructure("HHPH")
 

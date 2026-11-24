@@ -21,7 +21,6 @@ app = FastAPI(
 )
 
 
-# Lejimi i komunikimit me React frontend.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -39,12 +38,12 @@ app.add_middleware(
 class ProteinRequest(BaseModel):
     sequence: str
 
-    # Parametrat e Simulated Annealing.
+    # Simulated Annealing
     iterations: int = Field(default=1000, ge=1, le=100000)
     initial_temperature: float = Field(default=10.0, gt=0)
     cooling_rate: float = Field(default=0.995, gt=0, le=1)
 
-    # Parametrat e Genetic Algorithm.
+    # Genetic Algorithm
     population_size: int = Field(default=30, ge=2, le=500)
     generations: int = Field(default=100, ge=1, le=10000)
     mutation_rate: float = Field(default=0.3, ge=0, le=1)
@@ -52,16 +51,8 @@ class ProteinRequest(BaseModel):
 
 
 def format_coordinates(structure):
-    """
-    Konverton koordinatat nga tuple në objekte
-    JSON me vlerat x, y dhe z.
-    """
     return [
-        {
-            "x": x,
-            "y": y,
-            "z": z
-        }
+        {"x": x, "y": y, "z": z}
         for x, y, z in structure.coordinates
     ]
 
@@ -70,19 +61,17 @@ def format_algorithm_result(
     structure,
     energy,
     energy_history,
-    performance
+    performance,
+    statistics
 ):
-    """
-    Përgatit rezultatet e një algoritmi
-    për t'u dërguar në frontend.
-    """
     return {
         "coordinates": format_coordinates(structure),
         "energy": energy,
         "energy_history": energy_history,
         "is_valid": is_valid_structure(structure),
         "execution_time": performance["execution_time"],
-        "peak_memory_mb": performance["peak_memory_mb"]
+        "peak_memory_mb": performance["peak_memory_mb"],
+        "statistics": statistics
     }
 
 
@@ -99,9 +88,7 @@ def home():
 
 @app.get("/health")
 def health_check():
-    return {
-        "status": "healthy"
-    }
+    return {"status": "healthy"}
 
 
 @app.post("/optimize")
@@ -111,16 +98,14 @@ def optimize_protein(request: ProteinRequest):
         # 1. Validimi i sekuencës.
         sequence = validate_sequence(request.sequence)
 
-        # 2. Konvertimi i sekuencës në modelin HP.
+        # 2. Konvertimi në modelin HP.
         hp_sequence = convert_to_hp(sequence)
 
-        # 3. Krijimi i strukturës fillestare 3D.
+        # 3. Krijimi i strukturës fillestare.
         initial_structure = ProteinStructure(hp_sequence)
 
         if not is_valid_structure(initial_structure):
-            raise ValueError(
-                "Initial protein structure is invalid."
-            )
+            raise ValueError("Initial protein structure is invalid.")
 
         # ==========================================
         # SIMULATED ANNEALING
@@ -131,19 +116,26 @@ def optimize_protein(request: ProteinRequest):
             initial_structure,
             initial_temperature=request.initial_temperature,
             cooling_rate=request.cooling_rate,
-            iterations=request.iterations
+            iterations=request.iterations,
+            return_stats=True
         )
 
-        sa_structure, sa_energy, sa_history = sa_result
+        (
+            sa_structure,
+            sa_energy,
+            sa_history,
+            sa_statistics
+        ) = sa_result
 
         sa_data = format_algorithm_result(
             sa_structure,
             sa_energy,
             sa_history,
-            sa_performance
+            sa_performance,
+            sa_statistics
         )
 
-        sa_data["iterations"] = len(sa_history)
+        sa_data["iterations"] = sa_statistics["iterations_completed"]
 
         # ==========================================
         # GENETIC ALGORITHM
@@ -170,11 +162,11 @@ def optimize_protein(request: ProteinRequest):
             ga_structure,
             ga_energy,
             ga_history,
-            ga_performance
+            ga_performance,
+            ga_statistics
         )
 
         ga_data["generations"] = len(ga_history) - 1
-        ga_data["statistics"] = ga_statistics
 
         # ==========================================
         # KRAHASIMI I ALGORITMEVE
@@ -212,8 +204,7 @@ def optimize_protein(request: ProteinRequest):
             "sequence": sequence,
             "hp_sequence": hp_sequence,
 
-            # Ruajtja e rezultateve kryesore të SA
-            # për kompatibilitet me frontend-in aktual.
+            # Rezultatet kryesore të SA për frontend-in aktual.
             "coordinates": sa_data["coordinates"],
             "energy": sa_data["energy"],
             "energy_history": sa_data["energy_history"],
