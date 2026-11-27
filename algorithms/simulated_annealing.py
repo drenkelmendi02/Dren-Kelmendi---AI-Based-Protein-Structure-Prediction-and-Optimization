@@ -49,7 +49,8 @@ def simulated_annealing(
 
     temperature = initial_temperature
 
-    energy_history = [current_energy]
+    # Ruaj energjine me te mire te gjetur deri ne secilin iteracion.
+    energy_history = [best_energy]
 
     visited_states = {
         get_structure_signature(initial_structure)
@@ -74,7 +75,7 @@ def simulated_annealing(
 
         if new_structure is None:
             statistics["invalid_structures"] += 1
-            energy_history.append(current_energy)
+            energy_history.append(best_energy)
             statistics["iterations_completed"] += 1
 
             temperature *= cooling_rate
@@ -86,7 +87,7 @@ def simulated_annealing(
 
         if not is_valid_structure(new_structure):
             statistics["invalid_structures"] += 1
-            energy_history.append(current_energy)
+            energy_history.append(best_energy)
             statistics["iterations_completed"] += 1
 
             temperature *= cooling_rate
@@ -102,7 +103,7 @@ def simulated_annealing(
 
         if signature in visited_states:
             statistics["duplicate_structures"] += 1
-            energy_history.append(current_energy)
+            energy_history.append(best_energy)
             statistics["iterations_completed"] += 1
 
             temperature *= cooling_rate
@@ -141,7 +142,8 @@ def simulated_annealing(
             best_structure = current_structure
             best_energy = current_energy
 
-        energy_history.append(current_energy)
+        # Regjistrohet gjithmone energjia me e mire.
+        energy_history.append(best_energy)
 
         statistics["iterations_completed"] += 1
 
