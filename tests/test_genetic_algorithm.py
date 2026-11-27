@@ -4,6 +4,7 @@ import unittest
 
 from protein.representation.structure import ProteinStructure
 from protein.representation.constraints import is_valid_structure
+
 from evaluation.energy import calculate_energy
 from algorithms.genetic_algorithm import genetic_algorithm
 
@@ -12,8 +13,11 @@ class TestGeneticAlgorithm(unittest.TestCase):
 
     def setUp(self):
         random.seed(42)
+
         self.hp_sequence = "HHPHHP"
-        self.initial_structure = ProteinStructure(self.hp_sequence)
+        self.initial_structure = ProteinStructure(
+            self.hp_sequence
+        )
 
     def test_initial_structure_is_valid(self):
         self.assertTrue(
@@ -29,8 +33,14 @@ class TestGeneticAlgorithm(unittest.TestCase):
             crossover_rate=0.8
         )
 
-        self.assertTrue(is_valid_structure(best_structure))
-        self.assertEqual(best_energy, calculate_energy(best_structure))
+        self.assertTrue(
+            is_valid_structure(best_structure)
+        )
+
+        self.assertEqual(
+            best_energy,
+            calculate_energy(best_structure)
+        )
 
     def test_energy_history_is_non_increasing(self):
         _, _, history = genetic_algorithm(
@@ -44,7 +54,10 @@ class TestGeneticAlgorithm(unittest.TestCase):
         self.assertEqual(len(history), 6)
 
         for i in range(1, len(history)):
-            self.assertLessEqual(history[i], history[i - 1])
+            self.assertLessEqual(
+                history[i],
+                history[i - 1]
+            )
 
     def test_algorithm_returns_statistics(self):
         result = genetic_algorithm(
@@ -60,8 +73,22 @@ class TestGeneticAlgorithm(unittest.TestCase):
 
         best_structure, best_energy, history, statistics = result
 
-        self.assertTrue(is_valid_structure(best_structure))
-        self.assertIsInstance(best_energy, int)
+        self.assertTrue(
+            is_valid_structure(best_structure)
+        )
+
+        # Energy can be int or float because
+        # hydrophobic contact weight is configurable.
+        self.assertIsInstance(
+            best_energy,
+            (int, float)
+        )
+
+        self.assertEqual(
+            best_energy,
+            calculate_energy(best_structure)
+        )
+
         self.assertEqual(len(history), 6)
 
         self.assertIn("candidate_configurations", statistics)
@@ -71,6 +98,30 @@ class TestGeneticAlgorithm(unittest.TestCase):
         self.assertIn("unique_structures", statistics)
         self.assertIn("energy_evaluations", statistics)
         self.assertIn("elimination_percentage", statistics)
+
+    def test_algorithm_supports_custom_energy_weight(self):
+        result = genetic_algorithm(
+            self.initial_structure,
+            population_size=6,
+            generations=5,
+            mutation_rate=0.3,
+            crossover_rate=0.8,
+            return_stats=True,
+            hydrophobic_contact_weight=2.0
+        )
+
+        best_structure, best_energy, history, statistics = result
+
+        expected_energy = calculate_energy(
+            best_structure,
+            hydrophobic_contact_weight=2.0
+        )
+
+        self.assertEqual(best_energy, expected_energy)
+
+        self.assertTrue(
+            is_valid_structure(best_structure)
+        )
 
 
 if __name__ == "__main__":
