@@ -2,7 +2,7 @@
 
 ## 1. Project Overview
 
-This project focuses on predicting and optimizing protein structures using algorithmic search techniques.
+This project focuses on predicting and optimizing protein structures using algorithmic search and optimization techniques.
 
 The system receives an amino acid sequence and attempts to find a valid and optimized three-dimensional protein structure using the Hydrophobic-Polar (HP) model.
 
@@ -11,20 +11,22 @@ The main objective is to explore different protein configurations, evaluate thei
 - Simulated Annealing (SA)
 - Genetic Algorithm (GA)
 
-The project implements its own algorithms without relying on external protein-folding libraries.
+The project implements its own optimization algorithms without relying on external protein-folding libraries.
 
 ## 2. Project Objectives
 
-The main objectives are:
+The main objectives of this project are:
 
 - Convert an amino acid sequence into a computational representation.
 - Represent proteins using a three-dimensional lattice model.
 - Implement an energy function for evaluating protein structures.
 - Implement two different optimization algorithms.
-- Reduce the search space by rejecting invalid and duplicate structures.
-- Evaluate the algorithms using proteins of different lengths.
-- Compare solution quality, execution time, and memory usage.
-- Analyze the time and space complexity of the implemented algorithms.
+- Apply search-space reduction techniques.
+- Generate and validate different protein configurations.
+- Evaluate the algorithms using proteins of different lengths and sequence patterns.
+- Compare solution quality, execution time, and memory consumption.
+- Visualize the resulting protein structures in 3D.
+- Analyze the experimental results and algorithm performance.
 
 ## 3. Protein Representation
 
@@ -34,10 +36,12 @@ The project uses the Hydrophobic-Polar (HP) model to simplify protein representa
 
 Each amino acid is classified into one of two categories:
 
-- H (Hydrophobic): Amino acids that tend to avoid water.
-- P (Polar): Amino acids that interact more favorably with water.
+- **H (Hydrophobic):** Amino acids that tend to avoid water.
+- **P (Polar):** Amino acids that interact more favorably with water.
 
-The amino acid sequence is converted into an H/P sequence using the implemented classification.
+The original amino acid sequence is converted into an H/P sequence using the implemented classification.
+
+This representation simplifies the protein-folding problem and allows the optimization algorithms to work with a reduced model.
 
 ### 3.2 Three-Dimensional Lattice
 
@@ -47,31 +51,32 @@ Each residue has an integer coordinate:
 
 `(x, y, z)`
 
-The structure must satisfy two conditions:
+A valid protein structure must satisfy two conditions:
 
 1. No two residues can occupy the same coordinate.
 2. Consecutive residues must be adjacent on the lattice.
 
-These conditions ensure that the generated protein structure is valid according to the implemented model.
+These constraints ensure that generated protein structures are valid according to the implemented HP model.
 
 ## 4. Energy Function
 
-The energy function evaluates the quality of a protein structure.
+The energy function evaluates the quality of a protein structure using non-consecutive hydrophobic contacts.
 
-The implemented function considers non-consecutive hydrophobic contacts.
+The implemented energy function is:
 
-The energy is calculated as:
-
-**E(S) = -N_HH**
+**E(S) = -w × N_HH**
 
 Where:
 
-- E(S) represents the energy of the structure.
-- N_HH represents the number of non-consecutive hydrophobic contacts.
+- **E(S)** represents the energy of the protein structure.
+- **w** represents the configurable hydrophobic contact weight.
+- **N_HH** represents the number of non-consecutive hydrophobic contacts.
 
-Two hydrophobic residues contribute to the energy when they are adjacent in the three-dimensional lattice but are not consecutive in the original amino acid sequence.
+A hydrophobic contact is counted when two hydrophobic residues (H) are adjacent in the three-dimensional lattice but are not consecutive in the original amino acid sequence.
 
-A lower energy value indicates a better structure according to the implemented HP model.
+The hydrophobic contact weight is configurable through the `hydrophobic_contact_weight` parameter. Its default value is 1.0.
+
+A lower (more negative) energy value indicates a better structure according to the implemented HP model.
 
 ## 5. Optimization Algorithms
 
@@ -88,7 +93,9 @@ A new configuration is accepted when:
 
 The temperature decreases during the optimization process, reducing the probability of accepting worse solutions.
 
-This allows the algorithm to explore the search space and potentially avoid local optima.
+This mechanism allows the algorithm to explore different configurations and potentially avoid local optima.
+
+The algorithm keeps track of the best structure found during the optimization process.
 
 ### 5.2 Genetic Algorithm (GA)
 
@@ -101,31 +108,37 @@ The main operations include:
 - **Initialization:** Generate an initial population of valid structures.
 - **Evaluation:** Calculate the energy of each structure.
 - **Selection:** Select candidate structures for reproduction.
-- **Crossover:** Combine parts of two parent structures.
-- **Mutation:** Modify structures to generate new configurations.
+- **Crossover:** Combine parts of parent structures to generate new candidates.
+- **Mutation:** Modify structures to explore new configurations.
 - **Elitism:** Preserve high-quality structures for the next generation.
 
 The algorithm aims to improve the quality of the population over successive generations.
+
+It also uses energy caching to avoid unnecessary repeated energy calculations.
 
 ## 6. Search-Space Reduction
 
 The protein structure search space grows rapidly as the protein length increases.
 
-The project uses the following techniques to reduce unnecessary exploration:
+The project uses several techniques to reduce unnecessary exploration and computational work.
 
-### Invalid Structure Rejection
+### 6.1 Invalid Structure Rejection
 
 Structures containing overlapping residues or invalid connections are rejected.
 
-### Duplicate Elimination
+This prevents the algorithms from continuing to evaluate configurations that do not satisfy the structural constraints.
+
+### 6.2 Duplicate Elimination
 
 Previously visited structures are identified using coordinate-based signatures.
 
-Duplicate configurations are not evaluated again.
+Duplicate configurations are not evaluated again, reducing repeated work.
 
-### Energy Caching
+### 6.3 Energy Caching
 
-The Genetic Algorithm uses energy caching to avoid recalculating the energy of structures that have already been evaluated.
+The Genetic Algorithm uses an energy cache to store previously calculated energy values.
+
+When a known structure is encountered again, its stored energy value can be reused instead of recalculated.
 
 These techniques reduce unnecessary computations and improve search efficiency.
 
@@ -141,6 +154,8 @@ The implemented operations include:
 - Genetic mutations.
 
 Every generated candidate structure is checked to ensure that it satisfies the structural validity constraints.
+
+These operations allow the algorithms to explore different configurations while preserving the required protein structure rules.
 
 ## 8. System Architecture
 
@@ -168,7 +183,8 @@ Dren-Kelmendi---AI-Based-Protein-Structure-Prediction-and-Optimization/
 │   ├── plot_results.py
 │   ├── energy_comparison.png
 │   ├── time_comparison.png
-│   └── memory_comparison.png
+│   ├── memory_comparison.png
+│   └── search_space_reduction.png
 │
 ├── protein/
 │   └── representation/
@@ -215,63 +231,91 @@ Dren-Kelmendi---AI-Based-Protein-Structure-Prediction-and-Optimization/
 ### Algorithms and Evaluation
 - Simulated Annealing
 - Genetic Algorithm
-- HP Protein Model
+- Hydrophobic-Polar Protein Model
 - Matplotlib
 - Python unittest
 - Tracemalloc
 
 ## 10. Performance Evaluation
 
-The algorithms are evaluated using proteins of different lengths.
+The algorithms are evaluated using proteins of different lengths and sequence patterns.
 
 The experiments compare:
 
 - Average energy.
 - Average execution time.
 - Average memory consumption.
+- Search-space reduction.
 
-Each protein length is tested three times, and the average results are calculated.
+Each combination of protein length, sequence pattern, and algorithm is tested three times. Average values are calculated to provide a more representative comparison.
 
 ### 10.1 Experimental Configuration
 
 | Parameter | Value |
 |---|---:|
 | Protein lengths | 10, 15, 20, 25, 30 |
-| Number of runs | 3 |
+| Sequence patterns | 4 |
+| Number of runs per configuration | 3 |
 | SA iterations | 3000 |
 | GA population size | 30 |
 | GA generations | 100 |
+| Hydrophobic contact weight | 1.0 |
+
+The four sequence patterns used in the experiments are:
+
+- Balanced
+- Hydrophobic-rich
+- Polar-rich
+- Alternating
+
+The benchmark performs 120 algorithm executions in total:
+
+5 protein lengths × 4 sequence patterns × 3 runs × 2 algorithms.
 
 ### 10.2 Benchmark Results
 
-The following table presents the measured average results.
+The following table presents the average results grouped by protein length and algorithm. The values are averaged across the four sequence patterns.
 
 | Length | Algorithm | Average Energy | Time (s) | Memory (MB) |
 |---:|---|---:|---:|---:|
-| 10 | SA | -3.67 | 0.4656 | 0.4359 |
-| 10 | GA | -4.00 | 1.2234 | 1.7747 |
-| 15 | SA | -5.33 | 0.5932 | 1.1694 |
-| 15 | GA | -5.67 | 1.1399 | 2.4097 |
-| 20 | SA | -8.33 | 0.7546 | 1.6453 |
-| 20 | GA | -8.67 | 1.4234 | 3.2088 |
-| 25 | SA | -10.67 | 0.8594 | 1.5469 |
-| 25 | GA | -12.00 | 1.8002 | 4.3235 |
-| 30 | SA | -9.33 | 1.0923 | 2.3621 |
-| 30 | GA | -14.67 | 2.1278 | 5.1165 |
+| 10 | SA | -1.92 | 0.409 | 0.794 |
+| 10 | GA | -2.00 | 0.780 | 1.771 |
+| 15 | SA | -3.58 | 0.601 | 1.289 |
+| 15 | GA | -3.92 | 1.018 | 2.467 |
+| 20 | SA | -5.67 | 0.777 | 1.790 |
+| 20 | GA | -6.34 | 1.305 | 3.178 |
+| 25 | SA | -7.59 | 0.945 | 2.393 |
+| 25 | GA | -8.17 | 1.605 | 4.386 |
+| 30 | SA | -7.67 | 1.119 | 3.269 |
+| 30 | GA | -10.17 | 2.059 | 5.183 |
 
 ### 10.3 Experimental Graphs
 
+The project generates four graphs to visualize and compare the experimental results.
+
 #### Average Energy Comparison
+
+This graph compares the average energy values obtained by Simulated Annealing and Genetic Algorithm for different protein lengths.
 
 ![Average Energy Comparison](experiments/energy_comparison.png)
 
 #### Execution Time Comparison
 
+This graph compares the average execution time of both algorithms.
+
 ![Execution Time Comparison](experiments/time_comparison.png)
 
 #### Memory Usage Comparison
 
+This graph compares the average memory consumption of both algorithms.
+
 ![Memory Usage Comparison](experiments/memory_comparison.png)
+
+#### Search-Space Reduction Comparison
+
+This graph compares the average percentage of generated candidate structures rejected because they are invalid or duplicates.
+
+![Search-Space Reduction Comparison](experiments/search_space_reduction.png)
 
 ### 10.4 Results Analysis
 
@@ -283,15 +327,23 @@ This indicates that GA found structures with more favorable hydrophobic contacts
 
 **Execution Time**
 
-Simulated Annealing was faster in all tested cases.
+Simulated Annealing was faster than Genetic Algorithm in all tested protein lengths.
 
 The Genetic Algorithm required more computation time because it evaluates and evolves a population of candidate structures.
 
 **Memory Usage**
 
-Simulated Annealing used less memory than the Genetic Algorithm in all experiments.
+Simulated Annealing used less memory than Genetic Algorithm in all tested cases.
 
 The Genetic Algorithm requires additional memory for maintaining its population and associated search information.
+
+**Search-Space Reduction**
+
+Both algorithms use invalid structure rejection and duplicate elimination to reduce unnecessary exploration.
+
+The Genetic Algorithm also uses energy caching to avoid repeated energy calculations.
+
+The measured elimination percentage represents the proportion of generated candidate structures rejected due to invalidity or duplication. It does not represent the percentage of the entire theoretical protein configuration space.
 
 **Scalability**
 
@@ -299,59 +351,9 @@ As protein length increases, both algorithms generally require more computationa
 
 The results demonstrate a trade-off between solution quality and computational efficiency.
 
-## 11. Time and Space Complexity Analysis
+In these experiments, Genetic Algorithm achieved better energy values, while Simulated Annealing provided faster execution and lower memory consumption.
 
-Let:
-
-- n = protein length.
-- I = number of Simulated Annealing iterations.
-- G = number of Genetic Algorithm generations.
-- P = population size.
-- U = number of unique structures stored during the search.
-
-### Energy Function
-
-The energy function compares residue pairs to identify hydrophobic contacts.
-
-**Time Complexity:** O(n²)
-
-**Auxiliary Space Complexity:** O(1)
-
-### Structure Validation
-
-Overlap detection uses coordinate-based set operations, while connection validation checks consecutive residues.
-
-**Expected Time Complexity:** O(n)
-
-**Space Complexity:** O(n)
-
-### Simulated Annealing
-
-The algorithm performs I iterations. Each iteration generates and evaluates a neighboring structure.
-
-Since energy evaluation takes O(n²):
-
-**Time Complexity:** O(I × n²)
-
-The algorithm stores visited structures and their coordinate signatures.
-
-**Space Complexity:** O(I × n)
-
-### Genetic Algorithm
-
-The Genetic Algorithm processes a population of P structures over G generations.
-
-Assuming approximately P candidate evaluations per generation and an O(n²) energy evaluation:
-
-**Typical Time Complexity:** O(G × P × n²)
-
-The algorithm stores its population and cached or visited structures.
-
-**Space Complexity:** O(U × n + P × n)
-
-The actual running time depends on the number of valid and unique candidate structures generated.
-
-## 12. Testing
+## 11. Testing
 
 The project includes automated unit tests using Python's unittest framework.
 
@@ -365,6 +367,9 @@ The tests cover:
 - Energy calculation.
 - Simulated Annealing behavior.
 - Genetic Algorithm behavior.
+- Algorithm statistics.
+- Custom hydrophobic contact weight.
+- Energy history behavior.
 
 ### Running Tests
 
@@ -374,37 +379,43 @@ From the project root directory, execute:
 python -m unittest discover -s tests -v
 ```
 
-**Current test result:**
+**Latest test result:**
 
-25 tests passed successfully.
+26 tests passed successfully.
 
-## 13. Installation and Execution
+## 12. Installation and Execution
 
-### 13.1 Clone the Repository
+### 12.1 Clone the Repository
 
 ```bash
 git clone https://github.com/drenkelmendi02/Dren-Kelmendi---AI-Based-Protein-Structure-Prediction-and-Optimization.git
 ```
 
-### 13.2 Enter the Project Directory
+### 12.2 Enter the Project Directory
 
 ```bash
 cd Dren-Kelmendi---AI-Based-Protein-Structure-Prediction-and-Optimization
 ```
 
-### 13.3 Install Python Dependencies
+### 12.3 Install Python Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 13.4 Run the Backend
+Matplotlib is required for generating the experimental graphs:
+
+```bash
+pip install matplotlib
+```
+
+### 12.4 Run the Backend
 
 ```bash
 uvicorn backend.app:app --reload
 ```
 
-### 13.5 Run the Frontend
+### 12.5 Run the Frontend
 
 Open another terminal:
 
@@ -414,7 +425,7 @@ npm install
 npm run dev
 ```
 
-### 13.6 Run the Benchmark
+### 12.6 Run the Benchmark
 
 From the project root directory:
 
@@ -422,14 +433,13 @@ From the project root directory:
 python -m experiments.benchmark
 ```
 
-### 13.7 Generate Experimental Graphs
+### 12.7 Generate Experimental Graphs
 
 ```bash
-pip install matplotlib
 python -m experiments.plot_results
 ```
 
-## 14. Limitations
+## 13. Limitations
 
 - The project uses the simplified Hydrophobic-Polar model.
 - Protein structures are represented on a three-dimensional lattice.
@@ -437,17 +447,20 @@ python -m experiments.plot_results
 - The predicted structures are approximations within the implemented model.
 - The results do not represent experimentally verified biological protein structures.
 
-## 15. Conclusion
+## 14. Conclusion
 
 This project demonstrates how algorithmic optimization techniques can be applied to simplified protein structure prediction.
 
-Two different optimization approaches, Simulated Annealing and Genetic Algorithm, were implemented and evaluated.
+Two different optimization approaches, Simulated Annealing and Genetic Algorithm, were implemented and evaluated using a three-dimensional HP protein model.
 
 Experimental results show that the Genetic Algorithm achieved better energy values in the tested cases, while Simulated Annealing required less execution time and memory.
 
-The project demonstrates the importance of balancing solution quality, computational efficiency, and search-space reduction when solving complex optimization problems.
+The project also demonstrates the importance of search-space reduction, structural validation, and performance evaluation when solving complex optimization problems.
+
+The final implementation provides protein representation, optimization algorithms, experimental benchmarking, automated testing, and three-dimensional visualization.
 
 ---
 
-**Repository:**  
+**Repository:**
+
 https://github.com/drenkelmendi02/Dren-Kelmendi---AI-Based-Protein-Structure-Prediction-and-Optimization/
